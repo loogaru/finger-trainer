@@ -1,0 +1,1771 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 Тренажёр координации пальцев</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #aaa;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* === ПАНЕЛЬ УПРАВЛЕНИЯ === */
+        .control-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .hand-toggle {
+            display: flex;
+            gap: 0;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #444;
+        }
+
+        .hand-toggle button {
+            padding: 10px 20px;
+            border: none;
+            background: #2d2d44;
+            color: #ccc;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .hand-toggle button.active {
+            background: #4a4a6a;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .hand-toggle button:hover:not(.active) {
+            background: #3a3a55;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            background: #4a4a6a;
+            color: #fff;
+        }
+
+        .btn:hover {
+            background: #5a5a7a;
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: #3498db;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-success {
+            background: #2ecc71;
+        }
+
+        .btn-success:hover {
+            background: #27ae60;
+        }
+
+        .btn-warning {
+            background: #f39c12;
+        }
+
+        .btn-warning:hover {
+            background: #e67e22;
+        }
+
+        /* === СТАТИСТИКА === */
+        .stats-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .stat-box {
+            background: #2d2d44;
+            padding: 12px 20px;
+            border-radius: 10px;
+            text-align: center;
+            min-width: 100px;
+        }
+
+        .stat-box .label {
+            font-size: 0.75rem;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-box .value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-top: 4px;
+        }
+
+        .stat-box.score .value { color: #2ecc71; }
+        .stat-box.errors .value { color: #e74c3c; }
+        .stat-box.time .value { color: #f1c40f; }
+        .stat-box.progress .value { color: #3498db; }
+
+        /* === ЗОНА ЗАДАНИЯ === */
+        .task-zone {
+            background: #2d2d44;
+            border-radius: 12px;
+            padding: 20px;
+            width: 100%;
+            max-width: 900px;
+            margin-bottom: 20px;
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .task-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .task-notation {
+            font-family: 'Courier New', monospace;
+            background: #1a1a2e;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            border-left: 4px solid #3498db;
+        }
+
+        .task-notation .move-arrow {
+            color: #f1c40f;
+            font-weight: bold;
+        }
+
+        .task-notation .hold-tag {
+            color: #2ecc71;
+            font-style: italic;
+        }
+
+        .task-notation .finger-num {
+            display: inline-block;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 22px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #fff;
+            margin-right: 4px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #1a1a2e;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #3498db;
+            transition: width 0.3s;
+        }
+
+        /* === ВИЗУАЛЬНАЯ ИНСТРУКЦИЯ === */
+        .move-cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+
+        .move-card {
+            background: #1a1a2e;
+            border-radius: 10px;
+            padding: 10px 12px;
+            min-width: 100px;
+            text-align: center;
+            border: 2px solid #444;
+            transition: all 0.2s;
+        }
+
+        .move-card.completed {
+            opacity: 0.5;
+            border-color: #2ecc71;
+        }
+
+        .move-card .finger-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+
+        .move-card .finger-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+        }
+
+        .move-card .finger-label {
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: #ccc;
+        }
+
+        .move-card .move-body {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .move-card .move-body .arrow {
+            color: #f1c40f;
+            margin: 0 4px;
+        }
+
+        .move-card .move-body .hold-text {
+            color: #2ecc71;
+            font-size: 0.9rem;
+        }
+
+        .move-card .key-box {
+            display: inline-block;
+            background: #3a3a55;
+            border: 2px solid #5a5a7a;
+            border-radius: 5px;
+            padding: 3px 8px;
+            min-width: 30px;
+            font-size: 1rem;
+        }
+
+        .move-card .key-box.target-key {
+            border-color: #f1c40f;
+            background: rgba(241, 196, 15, 0.2);
+            animation: pulse 1s infinite;
+        }
+
+        .move-card .key-box.hold-key {
+            border-style: dashed;
+            border-color: #2ecc71;
+            background: rgba(46, 204, 113, 0.15);
+        }
+
+        /* === ЛЕГЕНДА ПАЛЬЦЕВ === */
+        .fingers-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 15px;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .finger-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #2d2d44;
+            padding: 5px 10px;
+            border-radius: 16px;
+            font-size: 0.8rem;
+        }
+
+        .finger-color {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+        }
+
+        .finger-name {
+            color: #ccc;
+        }
+
+        /* === КЛАВИАТУРА === */
+        .keyboard {
+            background: #2d2d44;
+            border-radius: 12px;
+            padding: 20px;
+            width: 100%;
+            max-width: 900px;
+            user-select: none;
+        }
+
+        .keyboard-row {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+
+        .key {
+            width: 52px;
+            height: 52px;
+            background: #3a3a55;
+            border: 2px solid #4a4a6a;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #ddd;
+            transition: all 0.15s;
+            position: relative;
+        }
+
+        .key.wide { width: 82px; }
+        .key.extra-wide { width: 110px; }
+        .key.space { width: 320px; }
+
+        .key .finger-indicator {
+            position: absolute;
+            bottom: 3px;
+            right: 3px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            font-size: 0.65rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .key.active .finger-indicator,
+        .key.target .finger-indicator,
+        .key.hold .finger-indicator {
+            opacity: 1;
+        }
+
+        .key.pressed {
+            background: #ffffff !important;
+            color: #1a1a2e !important;
+            border-color: #ffffff !important;
+            transform: translateY(3px);
+            box-shadow: 0 0 15px rgba(255,255,255,0.6), inset 0 3px 6px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+
+        /* Цвета пальцев на клавишах */
+        .key.finger-1 { border-color: #e74c3c; }
+        .key.finger-2 { border-color: #e67e22; }
+        .key.finger-3 { border-color: #f1c40f; }
+        .key.finger-4 { border-color: #2ecc71; }
+        .key.finger-5 { border-color: #3498db; }
+
+        .key.finger-1.active { background: rgba(231, 76, 60, 0.4); }
+        .key.finger-2.active { background: rgba(230, 126, 34, 0.4); }
+        .key.finger-3.active { background: rgba(241, 196, 15, 0.4); }
+        .key.finger-4.active { background: rgba(46, 204, 113, 0.4); }
+        .key.finger-5.active { background: rgba(52, 152, 219, 0.4); }
+
+        .key.target {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
+        .key.target.finger-1 { background: rgba(231, 76, 60, 0.6); box-shadow: 0 0 12px rgba(231, 76, 60, 0.5); }
+        .key.target.finger-2 { background: rgba(230, 126, 34, 0.6); box-shadow: 0 0 12px rgba(230, 126, 34, 0.5); }
+        .key.target.finger-3 { background: rgba(241, 196, 15, 0.6); box-shadow: 0 0 12px rgba(241, 196, 15, 0.5); }
+        .key.target.finger-4 { background: rgba(46, 204, 113, 0.6); box-shadow: 0 0 12px rgba(46, 204, 113, 0.5); }
+        .key.target.finger-5 { background: rgba(52, 152, 219, 0.6); box-shadow: 0 0 12px rgba(52, 152, 219, 0.5); }
+
+        .key.hold {
+            border-style: dashed;
+            border-width: 3px;
+        }
+
+        .key.hold.finger-1 { border-color: #e74c3c; background: rgba(231, 76, 60, 0.25); }
+        .key.hold.finger-2 { border-color: #e67e22; background: rgba(230, 126, 34, 0.25); }
+        .key.hold.finger-3 { border-color: #f1c40f; background: rgba(241, 196, 15, 0.25); }
+        .key.hold.finger-4 { border-color: #2ecc71; background: rgba(46, 204, 113, 0.25); }
+        .key.hold.finger-5 { border-color: #3498db; background: rgba(52, 152, 219, 0.25); }
+
+        .key.error {
+            animation: shake 0.4s;
+            background: #c0392b !important;
+            border-color: #e74c3c !important;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            75% { transform: translateX(4px); }
+        }
+
+        .key.success {
+            animation: success-pulse 0.4s;
+        }
+
+        @keyframes success-pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); background: #2ecc71; }
+            100% { transform: scale(1); }
+        }
+
+        /* === ИНСТРУКЦИЯ / ЗАГРУЗКА === */
+        .input-zone {
+            background: #2d2d44;
+            border-radius: 12px;
+            padding: 20px;
+            width: 100%;
+            max-width: 900px;
+            margin-top: 20px;
+        }
+
+        .input-zone h3 {
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+        }
+
+        .notation-help {
+            font-size: 0.85rem;
+            color: #aaa;
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+
+        .notation-help code {
+            background: #1a1a2e;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #f1c40f;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            background: #1a1a2e;
+            border: 2px solid #4a4a6a;
+            border-radius: 8px;
+            padding: 12px;
+            color: #eee;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            resize: vertical;
+            margin-bottom: 12px;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .preset-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        /* === СООБЩЕНИЯ === */
+        .message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 14px 20px;
+            border-radius: 10px;
+            font-weight: bold;
+            z-index: 1000;
+            animation: slideIn 0.3s;
+            max-width: 300px;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .message.error-msg {
+            background: #c0392b;
+            color: #fff;
+        }
+
+        .message.success-msg {
+            background: #27ae60;
+            color: #fff;
+        }
+
+        .message.info-msg {
+            background: #2980b9;
+            color: #fff;
+        }
+
+        /* === МОДАЛЬНОЕ ОКНО РЕЗУЛЬТАТОВ === */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: #2d2d44;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .modal h2 {
+            margin-bottom: 20px;
+            font-size: 1.6rem;
+        }
+
+        .modal-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .modal-stat {
+            background: #1a1a2e;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .modal-stat .label {
+            font-size: 0.8rem;
+            color: #aaa;
+            text-transform: uppercase;
+        }
+
+        .modal-stat .value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        /* === АДАПТИВНОСТЬ === */
+        @media (max-width: 768px) {
+            .key { width: 38px; height: 38px; font-size: 0.75rem; }
+            .key.wide { width: 60px; }
+            .key.extra-wide { width: 80px; }
+            .key.space { width: 200px; }
+            h1 { font-size: 1.3rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🎯 Тренажёр координации пальцев</h1>
+    <p class="subtitle">Развивай независимость, растяжку и точность пальцев на клавиатуре</p>
+
+    <!-- Панель управления -->
+    <div class="control-panel">
+        <div class="hand-toggle">
+            <button id="btnLeftHand" class="active" onclick="setHand('left')">✋ Левая рука</button>
+            <button id="btnRightHand" onclick="setHand('right')">🤚 Правая рука</button>
+        </div>
+        <button class="btn btn-primary" onclick="startRandom()">🎲 Случайное задание</button>
+        <button class="btn btn-success" onclick="startCustom()">▶ Запустить своё</button>
+        <button class="btn btn-warning" onclick="resetTrainer()">↺ Сброс</button>
+    </div>
+
+    <!-- Статистика -->
+    <div class="stats-bar">
+        <div class="stat-box score">
+            <div class="label">Точность</div>
+            <div class="value" id="statScore">100%</div>
+        </div>
+        <div class="stat-box errors">
+            <div class="label">Ошибки</div>
+            <div class="value" id="statErrors">0</div>
+        </div>
+        <div class="stat-box time">
+            <div class="label">Время</div>
+            <div class="value" id="statTime">0:00</div>
+        </div>
+        <div class="stat-box progress">
+            <div class="label">Прогресс</div>
+            <div class="value" id="statProgress">0/0</div>
+        </div>
+    </div>
+
+    <!-- Легенда пальцев -->
+    <div class="fingers-legend" id="fingersLegend">
+        <!-- Заполняется JS -->
+    </div>
+
+    <!-- Зона задания -->
+    <div class="task-zone">
+        <div class="task-header">
+            <div class="task-title">📋 Текущее задание</div>
+            <div id="taskStatus">Ожидание...</div>
+        </div>
+        <div class="move-cards" id="taskNotation">
+            <div style="color: #888; text-align: center; width: 100%;">Загрузите задание или нажмите «Демо-задание» для начала</div>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+    </div>
+
+    <!-- Клавиатура -->
+    <div class="keyboard" id="keyboard">
+        <!-- Заполняется JS -->
+    </div>
+
+    <!-- Зона ввода заданий -->
+    <div class="input-zone">
+        <h3>📝 Ввод задания (нотация)</h3>
+        <div class="notation-help">
+            <code>1:A->S</code> — палец 1 переместить с A на S &nbsp;|&nbsp;
+            <code>2:D hold</code> — палец 2 удерживать D &nbsp;|&nbsp;
+            <code>3:F hold</code> — палец 3 удерживать F<br>
+            Несколько действий через пробел. Каждый ход — с новой строки.
+        </div>
+        <textarea id="taskInput" placeholder="Введите задание здесь...
+Пример:
+1:A->S 2:D hold 3:F hold
+1:S->D 2:F hold 3:G hold"></textarea>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button class="btn btn-primary" onclick="parseAndLoad()">▶ Загрузить и запустить</button>
+            <button class="btn" onclick="clearInput()">Очистить</button>
+        </div>
+        <div class="preset-buttons">
+            <button class="btn" onclick="loadPreset('easy')">🟢 Простое</button>
+            <button class="btn" onclick="loadPreset('medium')">🟡 Среднее</button>
+            <button class="btn" onclick="loadPreset('hard')">🔴 Сложное</button>
+            <button class="btn" onclick="loadPreset('stretch')">🤸 Растяжка</button>
+        </div>
+    </div>
+
+    <!-- Модальное окно результатов -->
+    <div class="modal-overlay" id="resultModal">
+        <div class="modal">
+            <h2>🏆 Задание завершено!</h2>
+            <div class="modal-stats">
+                <div class="modal-stat">
+                    <div class="label">Точность</div>
+                    <div class="value" id="modalScore" style="color: #2ecc71;">-</div>
+                </div>
+                <div class="modal-stat">
+                    <div class="label">Ошибок</div>
+                    <div class="value" id="modalErrors" style="color: #e74c3c;">-</div>
+                </div>
+                <div class="modal-stat">
+                    <div class="label">Время</div>
+                    <div class="value" id="modalTime" style="color: #f1c40f;">-</div>
+                </div>
+                <div class="modal-stat">
+                    <div class="label">Ходов</div>
+                    <div class="value" id="modalMoves" style="color: #3498db;">-</div>
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="closeModal()" style="font-size: 1.1rem; padding: 12px 30px;">Отлично!</button>
+        </div>
+    </div>
+
+    <script>
+    // ==================== КОНФИГУРАЦИЯ ====================
+
+    const FINGER_COLORS = {
+        1: '#e74c3c', // Красный - мизинец (левый) / большой (правый)
+        2: '#e67e22', // Оранжевый - безымянный (левый) / указательный (правый)
+        3: '#f1c40f', // Жёлтый - средний
+        4: '#2ecc71', // Зелёный - указательный (левый) / безымянный (правый)
+        5: '#3498db'  // Синий - большой (левый) / мизинец (правый)
+    };
+
+    const FINGER_NAMES_LEFT = {
+        1: 'Мизинец',
+        2: 'Безымянный',
+        3: 'Средний',
+        4: 'Указательный',
+        5: 'Большой'
+    };
+
+    const FINGER_NAMES_RIGHT = {
+        1: 'Большой',
+        2: 'Указательный',
+        3: 'Средний',
+        4: 'Безымянный',
+        5: 'Мизинец'
+    };
+
+    // Зеркальное отображение клавиш для правой руки (симметрия относительно центра)
+    const KEY_MIRROR = {
+        'a': ';', 's': 'l', 'd': 'k', 'f': 'j', 'g': 'h',
+        'q': 'p', 'w': 'o', 'e': 'i', 'r': 'u', 't': 'y',
+        'z': '/', 'x': '.', 'c': ',', 'v': 'm', 'b': 'n',
+        '1': '0', '2': '9', '3': '8', '4': '7', '5': '6',
+        '-': '=', '[': ']', ';': 'a', "'": '\\',
+        ',': 'c', '.': 'x', '/': 'z',
+        ' ': ' ', 'space': 'space'
+    };
+
+    // Получить цвет пальца с учётом руки (физический палец = фиксированный цвет)
+    function getFingerColor(finger) {
+        return FINGER_COLORS[mapFinger(finger)];
+    }
+
+    // Зеркалировать клавишу для правой руки
+    function mirrorKey(key) {
+        if (state.hand === 'left') return key;
+        const lower = key.toLowerCase();
+        return KEY_MIRROR[lower] || lower;
+    }
+
+    // Зеркалировать текст задания для правой руки
+    function mirrorTaskText(text) {
+        if (state.hand === 'left') return text;
+        return text.replace(/([A-Za-z0-9,./;'\[\]\\\-=]+)/g, (match) => {
+            const lower = match.toLowerCase();
+            const mirrored = KEY_MIRROR[lower];
+            return mirrored ? mirrored.toUpperCase() : match;
+        });
+    }
+
+    // Раскладка клавиатуры для визуализации
+    const KEYBOARD_LAYOUT = [
+        ['1','2','3','4','5','6','7','8','9','0','-','='],
+        ['Q','W','E','R','T','Y','U','I','O','P','[',']'],
+        ['A','S','D','F','G','H','J','K','L',';','\''],
+        ['Z','X','C','V','B','N','M',',','.','/'],
+        ['Space']
+    ];
+
+    // Ширины клавиш
+    const KEY_WIDTHS = {
+        'Space': 'space'
+    };
+
+    // Маппинг физических кодов клавиш (e.code) на латинские буквы — игнорирует раскладку
+    const CODE_TO_KEY = {
+        'KeyQ': 'q', 'KeyW': 'w', 'KeyE': 'e', 'KeyR': 'r', 'KeyT': 't',
+        'KeyY': 'y', 'KeyU': 'u', 'KeyI': 'i', 'KeyO': 'o', 'KeyP': 'p',
+        'KeyA': 'a', 'KeyS': 's', 'KeyD': 'd', 'KeyF': 'f', 'KeyG': 'g',
+        'KeyH': 'h', 'KeyJ': 'j', 'KeyK': 'k', 'KeyL': 'l',
+        'KeyZ': 'z', 'KeyX': 'x', 'KeyC': 'c', 'KeyV': 'v', 'KeyB': 'b',
+        'KeyN': 'n', 'KeyM': 'm',
+        'Digit1': '1', 'Digit2': '2', 'Digit3': '3', 'Digit4': '4',
+        'Digit5': '5', 'Digit6': '6', 'Digit7': '7', 'Digit8': '8',
+        'Digit9': '9', 'Digit0': '0',
+        'Minus': '-', 'Equal': '=', 'BracketLeft': '[', 'BracketRight': ']',
+        'Semicolon': ';', 'Quote': "'", 'Backquote': '`',
+        'Backslash': '\\', 'Comma': ',', 'Period': '.', 'Slash': '/',
+        'Space': 'space', 'Enter': 'enter', 'Tab': 'tab',
+        'Backspace': 'backspace',
+        'ShiftLeft': 'shift', 'ShiftRight': 'shift',
+        'ControlLeft': 'ctrl', 'ControlRight': 'ctrl',
+        'AltLeft': 'alt', 'AltRight': 'alt'
+    };
+
+    // ==================== СОСТОЯНИЕ ====================
+
+    let state = {
+        hand: 'left', // 'left' или 'right'
+        tasks: [],    // Массив ходов
+        currentMove: 0,
+        isRunning: false,
+        startTime: null,
+        elapsed: 0,
+        errors: 0,
+        totalErrors: 0,
+        score: 100,
+        pressedKeys: new Set(),
+        timerInterval: null,
+        // Текущий ход
+        currentHolds: new Map(),    // finger -> key (удерживаемые)
+        currentMoves: new Map(),    // finger -> {from, to} (перемещения)
+        completedMoves: new Set(),  // finger (завершённые перемещения)
+        // Для проверки
+        expectedKeys: new Set(),    // Клавиши, которые должны быть нажаты
+        holdKeys: new Set(),       // Клавиши, которые нельзя отпускать
+        moveFromKeys: new Set(),   // Клавиши, с которых идёт перемещение
+        moveToKeys: new Set(),      // Клавиши, на которые идёт перемещение
+        moveFromPressed: new Set()  // Пальцы, чья from-клавиша была нажата в текущем ходе
+    };
+
+    // ==================== ИНИЦИАЛИЗАЦИЯ ====================
+
+    function init() {
+        renderKeyboard();
+        renderLegend();
+        setupKeyboardListeners();
+    }
+
+    function renderKeyboard() {
+        const kb = document.getElementById('keyboard');
+        kb.innerHTML = '';
+
+        KEYBOARD_LAYOUT.forEach(row => {
+            const rowDiv = document.createElement('div');
+            rowDiv.className = 'keyboard-row';
+
+            row.forEach(key => {
+                const keyDiv = document.createElement('div');
+                keyDiv.className = 'key';
+                keyDiv.dataset.key = key.toLowerCase();
+
+                if (KEY_WIDTHS[key]) {
+                    keyDiv.classList.add(KEY_WIDTHS[key]);
+                }
+
+                keyDiv.innerHTML = `
+                    <span>${key === 'Space' ? '␣' : key}</span>
+                    <span class="finger-indicator"></span>
+                `;
+
+                rowDiv.appendChild(keyDiv);
+            });
+
+            kb.appendChild(rowDiv);
+        });
+    }
+
+    function renderLegend() {
+        const names = state.hand === 'left' ? FINGER_NAMES_LEFT : FINGER_NAMES_RIGHT;
+        const container = document.getElementById('fingersLegend');
+
+        container.innerHTML = '';
+        for (let i = 1; i <= 5; i++) {
+            const badge = document.createElement('div');
+            badge.className = 'finger-badge';
+            badge.innerHTML = `
+                <div class="finger-color" style="background: ${getFingerColor(i)}"></div>
+                <span><strong>Палец ${i}</strong></span>
+                <span class="finger-name">${names[i]}</span>
+            `;
+            container.appendChild(badge);
+        }
+    }
+
+    // ==================== УПРАВЛЕНИЕ РУКОЙ ====================
+
+    function setHand(hand) {
+        state.hand = hand;
+        document.getElementById('btnLeftHand').classList.toggle('active', hand === 'left');
+        document.getElementById('btnRightHand').classList.toggle('active', hand === 'right');
+        renderLegend();
+
+        // Если задание загружено, пересчитать отображение
+        if (state.tasks.length > 0 && state.isRunning) {
+            applyMoveVisuals(state.currentMove);
+        }
+
+        showMessage(hand === 'left' ? '✋ Выбрана левая рука' : '🤚 Выбрана правая рука', 'info');
+    }
+
+    // Преобразовать номер пальца с учётом руки
+    function mapFinger(finger) {
+        if (state.hand === 'left') return finger;
+        return HAND_MIRROR[finger];
+    }
+
+    // ==================== ПАРСИНГ ЗАДАНИЙ ====================
+
+    function parseNotation(text) {
+        const moves = [];
+        const lines = text.trim().split('\n');
+
+        for (let line of lines) {
+            line = line.trim();
+            if (!line || line.startsWith('#') || line.startsWith('//')) continue;
+
+            const actions = [];
+            const tokens = line.split(/\s+/);
+            let i = 0;
+
+            while (i < tokens.length) {
+                const token = tokens[i];
+
+                // Формат перемещения: 1:A->B или 1:Space->Enter
+                const matchMove = token.match(/^(\d):([A-Za-z0-9,./;'\[\]\\\-=]+|Space|space)->([A-Za-z0-9,./;'\[\]\\\-=]+|Space|space)$/i);
+                // Формат удержания в одном токене: 2:Dhold или 2:Spacehold
+                const matchHoldInline = token.match(/^(\d):([A-Za-z0-9,./;'\[\]\\\-=]+|Space|space)hold$/i);
+                // Формат начала удержания: 2:D или 2:Space
+                const matchKey = token.match(/^(\d):([A-Za-z0-9,./;'\[\]\\\-=]+|Space|space)$/i);
+
+                if (matchMove) {
+                    actions.push({
+                        finger: parseInt(matchMove[1]),
+                        type: 'move',
+                        from: matchMove[2].toLowerCase(),
+                        to: matchMove[3].toLowerCase()
+                    });
+                    i++;
+                } else if (matchHoldInline) {
+                    actions.push({
+                        finger: parseInt(matchHoldInline[1]),
+                        type: 'hold',
+                        key: matchHoldInline[2].toLowerCase()
+                    });
+                    i++;
+                } else if (matchKey) {
+                    // Проверяем, следующий токен — hold?
+                    const finger = parseInt(matchKey[1]);
+                    const key = matchKey[2].toLowerCase();
+                    if (i + 1 < tokens.length && tokens[i + 1].toLowerCase() === 'hold') {
+                        actions.push({ finger, type: 'hold', key });
+                        i += 2;
+                    } else {
+                        // Если нет hold, считаем это перемещением без цели? 
+                        // Или просто пропускаем некорректный токен
+                        i++;
+                    }
+                } else {
+                    i++;
+                }
+            }
+
+            if (actions.length > 0) {
+                moves.push(actions);
+            }
+        }
+
+        return moves;
+    }
+
+    function parseAndLoad() {
+        const text = document.getElementById('taskInput').value;
+        const tasks = parseNotation(text);
+
+        if (tasks.length === 0) {
+            showMessage('❌ Не удалось распознать задание. Проверьте нотацию.', 'error');
+            return;
+        }
+
+        const validationErrors = validateTasks(tasks);
+        if (validationErrors.length > 0) {
+            showMessage('❌ Ошибки в задании:\n' + validationErrors.join('\n'), 'error');
+            return;
+        }
+
+        loadTasks(tasks);
+        showMessage(`✅ Загружено ${tasks.length} ходов`, 'success');
+    }
+
+    function validateTasks(tasks) {
+        const errors = [];
+        for (let i = 0; i < tasks.length; i++) {
+            const move = tasks[i];
+            const keysInMove = new Set();
+            for (const action of move) {
+                const key = action.type === 'move' ? action.to : action.key;
+                if (keysInMove.has(key)) {
+                    errors.push(`Ход ${i + 1}: два пальца на клавише ${key.toUpperCase()}`);
+                }
+                keysInMove.add(key);
+            }
+        }
+        return errors;
+    }
+
+    function loadTasks(tasks) {
+        state.tasks = tasks;
+        state.currentMove = 0;
+        state.errors = 0;
+        state.totalErrors = 0;
+        state.score = 100;
+        state.elapsed = 0;
+        state.isRunning = true;
+        state.startTime = Date.now();
+        state.pressedKeys.clear();
+        state.completedMoves.clear();
+        state.moveFromPressed.clear();
+
+        clearInterval(state.timerInterval);
+        state.timerInterval = setInterval(updateTimer, 1000);
+
+        updateStats();
+        applyMoveVisuals(0);
+        updateTaskDisplay();
+
+        document.getElementById('taskStatus').textContent = 'Выполняйте задание...';
+    }
+
+    // ==================== ВИЗУАЛИЗАЦИЯ ХОДА ====================
+
+    function applyMoveVisuals(moveIndex) {
+        // Сбросить все стили клавиш
+        document.querySelectorAll('.key').forEach(k => {
+            k.className = 'key';
+            if (KEY_WIDTHS[k.dataset.key]) {
+                k.classList.add(KEY_WIDTHS[k.dataset.key]);
+            }
+            // Полная очистка индикатора
+            const indicator = k.querySelector('.finger-indicator');
+            if (indicator) {
+                indicator.textContent = '';
+                indicator.style.background = '';
+                indicator.style.opacity = '';
+                indicator.style.display = '';
+            }
+            // Очистить inline-стили клавиши
+            k.style.background = '';
+            k.style.borderColor = '';
+            k.style.boxShadow = '';
+            k.style.animation = '';
+            k.style.transform = '';
+            // Восстановить pressed, если клавиша всё ещё нажата
+            if (state.pressedKeys.has(k.dataset.key)) {
+                k.classList.add('pressed');
+            }
+        });
+
+        if (moveIndex >= state.tasks.length) return;
+
+        const move = state.tasks[moveIndex];
+        state.currentHolds.clear();
+        state.currentMoves.clear();
+        state.expectedKeys.clear();
+        state.holdKeys.clear();
+        state.moveFromKeys.clear();
+        state.moveToKeys.clear();
+        state.moveFromPressed.clear();
+
+        for (const action of move) {
+            const fingerNum = action.finger; // Номер пальца как в нотации (1-5)
+            const color = getFingerColor(action.finger);
+
+            if (action.type === 'hold') {
+                state.currentHolds.set(action.finger, action.key);
+                state.expectedKeys.add(action.key);
+                state.holdKeys.add(action.key);
+
+                const keyEl = findKeyElement(action.key);
+                if (keyEl) {
+                    keyEl.classList.add('hold', `finger-${fingerNum}`);
+                    keyEl.querySelector('.finger-indicator').textContent = fingerNum;
+                    keyEl.querySelector('.finger-indicator').style.background = color;
+                }
+            } else if (action.type === 'move') {
+                state.currentMoves.set(action.finger, { from: action.from, to: action.to });
+                state.moveFromKeys.add(action.from);
+                state.moveToKeys.add(action.to);
+                state.expectedKeys.add(action.to);
+
+                if (state.pressedKeys.has(action.from)) {
+                    state.moveFromPressed.add(action.finger);
+                }
+
+                const fromEl = findKeyElement(action.from);
+                if (fromEl) {
+                    fromEl.classList.add('active', `finger-${fingerNum}`);
+                    fromEl.querySelector('.finger-indicator').textContent = fingerNum;
+                    fromEl.querySelector('.finger-indicator').style.background = color;
+                }
+
+                const toEl = findKeyElement(action.to);
+                if (toEl) {
+                    toEl.classList.add('target', `finger-${fingerNum}`);
+                    toEl.querySelector('.finger-indicator').textContent = fingerNum;
+                    toEl.querySelector('.finger-indicator').style.background = color;
+                }
+            }
+        }
+    }
+
+    function findKeyElement(key) {
+        return document.querySelector(`.key[data-key="${key.toLowerCase()}"]`);
+    }
+
+    function updateTaskDisplay() {
+        const notationEl = document.getElementById('taskNotation');
+        const progressEl = document.getElementById('statProgress');
+        const fillEl = document.getElementById('progressFill');
+
+        if (state.tasks.length === 0) {
+            notationEl.innerHTML = '<div style="color: #888; text-align: center; width: 100%;">Загрузите задание или нажмите «Демо-задание» для начала</div>';
+            progressEl.textContent = '0/0';
+            fillEl.style.width = '0%';
+            return;
+        }
+
+        if (state.currentMove >= state.tasks.length) {
+            notationEl.innerHTML = '<div style="color: #2ecc71; text-align: center; width: 100%; font-size: 1.2rem;">✅ Задание завершено!</div>';
+            return;
+        }
+
+        const move = state.tasks[state.currentMove];
+        const names = state.hand === 'left' ? FINGER_NAMES_LEFT : FINGER_NAMES_RIGHT;
+
+        let html = '';
+        for (const action of move) {
+            const fingerNum = action.finger;
+            const color = getFingerColor(action.finger);
+            const fingerName = names[action.finger];
+
+            if (action.type === 'move') {
+                html += `
+                    <div class="move-card" style="border-color: ${color};">
+                        <div class="finger-header">
+                            <div class="finger-dot" style="background: ${color};"></div>
+                            <span class="finger-label">Палец ${action.finger} — ${fingerName}</span>
+                        </div>
+                        <div class="move-body">
+                            <span class="key-box">${action.from.toUpperCase()}</span>
+                            <span class="arrow">→</span>
+                            <span class="key-box target-key">${action.to.toUpperCase()}</span>
+                        </div>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="move-card" style="border-color: ${color};">
+                        <div class="finger-header">
+                            <div class="finger-dot" style="background: ${color};"></div>
+                            <span class="finger-label">Палец ${action.finger} — ${fingerName}</span>
+                        </div>
+                        <div class="move-body">
+                            <span class="key-box hold-key">${action.key.toUpperCase()}</span>
+                            <span class="hold-text"> удерживать</span>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        notationEl.innerHTML = html;
+        progressEl.textContent = `${state.currentMove + 1}/${state.tasks.length}`;
+        fillEl.style.width = `${((state.currentMove + 1) / state.tasks.length * 100)}%`;
+    }
+
+    // ==================== ОБРАБОТКА КЛАВИШ ====================
+
+    function setupKeyboardListeners() {
+        document.addEventListener('keydown', handleKeyDown);
+        document.addEventListener('keyup', handleKeyUp);
+    }
+
+    function handleKeyDown(e) {
+        if (!state.isRunning || state.currentMove >= state.tasks.length) return;
+
+        const key = codeToKey(e.code);
+        if (!key) return;
+
+        // Предотвратить стандартное поведение для игровых клавиш
+        if (isGameKey(key)) {
+            e.preventDefault();
+        }
+
+        if (state.pressedKeys.has(key)) return; // Уже нажата
+        state.pressedKeys.add(key);
+
+        const keyEl = findKeyElement(key);
+        if (keyEl) {
+            keyEl.classList.add('pressed');
+        }
+
+        checkMoveProgress(key, 'down');
+    }
+
+    function handleKeyUp(e) {
+        if (!state.isRunning || state.currentMove >= state.tasks.length) return;
+
+        const key = codeToKey(e.code);
+        if (!key) return;
+
+        state.pressedKeys.delete(key);
+
+        const keyEl = findKeyElement(key);
+        if (keyEl) {
+            keyEl.classList.remove('pressed');
+        }
+
+        checkMoveProgress(key, 'up');
+    }
+
+    function codeToKey(code) {
+        if (CODE_TO_KEY[code]) return CODE_TO_KEY[code];
+        return null;
+    }
+
+    function isGameKey(key) {
+        const gameKeys = 'abcdefghijklmnopqrstuvwxyz0123456789,./;\'[]-=';
+        return gameKeys.includes(key) || key === 'space';
+    }
+
+    // ==================== ЛОГИКА ПРОВЕРКИ ====================
+
+    function checkMoveProgress(key, event) {
+        const move = state.tasks[state.currentMove];
+        let error = false;
+        let success = false;
+
+        if (event === 'down') {
+            // Проверка: лишнее нажатие?
+            let isExpected = false;
+
+            for (const action of move) {
+                if (action.type === 'move') {
+                    const moveData = state.currentMoves.get(action.finger);
+                    if (moveData) {
+                        // Клавиша назначения или исходная клавиша допустимы
+                        if (moveData.to === key || moveData.from === key) {
+                            isExpected = true;
+                            // Отмечаем, что исходная позиция была нажата
+                            if (moveData.from === key) {
+                                state.moveFromPressed.add(action.finger);
+                            }
+                            break;
+                        }
+                    }
+                }
+                if (action.type === 'hold' && action.key === key) {
+                    isExpected = true;
+                    break;
+                }
+            }
+
+            if (!isExpected) {
+                // Лишнее нажатие
+                error = true;
+                registerError('Лишнее нажатие: ' + key.toUpperCase());
+                const el = findKeyElement(key);
+                if (el) el.classList.add('error');
+                setTimeout(() => { if (el) el.classList.remove('error'); }, 400);
+            }
+        } else if (event === 'up') {
+            // Проверка: отпущена удерживаемая клавиша?
+            for (const action of move) {
+                if (action.type === 'hold' && action.key === key) {
+                    error = true;
+                    registerError('Отпущена удерживаемая клавиша: ' + key.toUpperCase());
+                    const el = findKeyElement(key);
+                    if (el) el.classList.add('error');
+                    setTimeout(() => { if (el) el.classList.remove('error'); }, 400);
+                    break;
+                }
+            }
+        }
+
+        // Проверить, выполнен ли текущий ход
+        checkMoveComplete();
+    }
+
+    function checkMoveComplete() {
+        const move = state.tasks[state.currentMove];
+        let allComplete = true;
+
+        for (const action of move) {
+            if (action.type === 'move') {
+                const moveData = state.currentMoves.get(action.finger);
+                if (moveData) {
+                    // Целевая клавиша должна быть нажата
+                    if (!state.pressedKeys.has(moveData.to)) {
+                        allComplete = false;
+                        break;
+                    }
+                    // Исходная клавиша должна была быть нажата в этом ходе
+                    // (или удерживаться из предыдущего)
+                    if (!state.moveFromPressed.has(action.finger) && !state.pressedKeys.has(moveData.from)) {
+                        allComplete = false;
+                        break;
+                    }
+                }
+            } else if (action.type === 'hold') {
+                // Удержание выполнено, если клавиша нажата
+                if (!state.pressedKeys.has(action.key)) {
+                    allComplete = false;
+                    break;
+                }
+            }
+        }
+
+        if (allComplete) {
+            // Ход выполнен!
+            state.completedMoves.add(state.currentMove);
+
+            // Показать успех
+            for (const action of move) {
+                if (action.type === 'move') {
+                    const toEl = findKeyElement(action.to);
+                    if (toEl) toEl.classList.add('success');
+                } else if (action.type === 'hold') {
+                    const holdEl = findKeyElement(action.key);
+                    if (holdEl) holdEl.classList.add('success');
+                }
+            }
+
+            setTimeout(() => {
+                document.querySelectorAll('.key.success').forEach(k => k.classList.remove('success'));
+            }, 400);
+
+            // Переход к следующему ходу
+            state.currentMove++;
+
+            if (state.currentMove >= state.tasks.length) {
+                finishTask();
+            } else {
+                applyMoveVisuals(state.currentMove);
+                updateTaskDisplay();
+            }
+        }
+    }
+
+    function registerError(msg) {
+        state.totalErrors++;
+        state.errors++;
+        state.score = Math.max(0, 100 - state.totalErrors * 5);
+        updateStats();
+        showMessage('❌ ' + msg, 'error');
+    }
+
+    // ==================== СТАТИСТИКА И ТАЙМЕР ====================
+
+    function updateTimer() {
+        if (!state.isRunning) return;
+        state.elapsed = Math.floor((Date.now() - state.startTime) / 1000);
+        updateStats();
+    }
+
+    function updateStats() {
+        const minutes = Math.floor(state.elapsed / 60);
+        const seconds = state.elapsed % 60;
+        document.getElementById('statTime').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        document.getElementById('statErrors').textContent = state.totalErrors;
+        document.getElementById('statScore').textContent = state.score + '%';
+    }
+
+    function finishTask() {
+        state.isRunning = false;
+        clearInterval(state.timerInterval);
+
+        const minutes = Math.floor(state.elapsed / 60);
+        const seconds = state.elapsed % 60;
+
+        document.getElementById('modalScore').textContent = state.score + '%';
+        document.getElementById('modalErrors').textContent = state.totalErrors;
+        document.getElementById('modalTime').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        document.getElementById('modalMoves').textContent = state.tasks.length;
+
+        document.getElementById('resultModal').classList.add('show');
+        document.getElementById('taskStatus').textContent = '✅ Задание завершено!';
+
+        showMessage('🎉 Задание выполнено! Отличная работа!', 'success');
+    }
+
+    function closeModal() {
+        document.getElementById('resultModal').classList.remove('show');
+        resetTrainer();
+    }
+
+    function resetTrainer() {
+        state.isRunning = false;
+        state.currentMove = 0;
+        state.errors = 0;
+        state.totalErrors = 0;
+        state.score = 100;
+        state.elapsed = 0;
+        state.pressedKeys.clear();
+        state.moveFromPressed.clear();
+        clearInterval(state.timerInterval);
+
+        document.querySelectorAll('.key').forEach(k => {
+            k.className = 'key';
+            if (KEY_WIDTHS[k.dataset.key]) {
+                k.classList.add(KEY_WIDTHS[k.dataset.key]);
+            }
+        });
+
+        updateStats();
+        updateTaskDisplay();
+        document.getElementById('taskStatus').textContent = 'Ожидание...';
+        document.getElementById('taskNotation').innerHTML = 'Загрузите задание или нажмите «Демо-задание» для начала';
+        document.getElementById('progressFill').style.width = '0%';
+    }
+
+    // ==================== ПРЕСЕТЫ ====================
+
+    const PRESETS = {
+        easy: `// Простое задание — базовые перемещения по всей клавиатуре
+// Установка
+1:A hold 2:S hold 3:D hold 4:F hold
+// Палец 1: вверх до цифр и назад
+1:A->Q 2:S hold 3:D hold 4:F hold
+1:Q->1 2:S hold 3:D hold 4:F hold
+1:1->Q 2:S hold 3:D hold 4:F hold
+1:Q->A 2:S hold 3:D hold 4:F hold
+// Палец 2: вверх до цифр и назад
+1:A hold 2:S->W 3:D hold 4:F hold
+1:A hold 2:W->2 3:D hold 4:F hold
+1:A hold 2:2->W 3:D hold 4:F hold
+1:A hold 2:W->S 3:D hold 4:F hold
+// Палец 3: вверх до цифр и назад
+1:A hold 2:S hold 3:D->E 4:F hold
+1:A hold 2:S hold 3:E->3 4:F hold
+1:A hold 2:S hold 3:3->E 4:F hold
+1:A hold 2:S hold 3:E->D 4:F hold
+// Палец 4: вверх до цифр и назад
+1:A hold 2:S hold 3:D hold 4:F->R
+1:A hold 2:S hold 3:D hold 4:R->4
+1:A hold 2:S hold 3:D hold 4:4->R
+1:A hold 2:S hold 3:D hold 4:R->F
+// Все вверх на верхний ряд
+1:A->Q 2:S->W 3:D->E 4:F->R
+// Все на цифры
+1:Q->1 2:W->2 3:E->3 4:R->4
+// Все назад на верхний
+1:1->Q 2:2->W 3:3->E 4:4->R
+// Все вниз на домашний
+1:Q->A 2:W->S 3:E->D 4:R->F
+// Все вниз на нижний
+1:A->Z 2:S->X 3:D->C 4:F->V
+// Все назад на домашний
+1:Z->A 2:X->S 3:C->D 4:V->F`,
+
+        medium: `// Среднее задание — с удержаниями
+// Установка
+1:A hold 2:S hold 3:D hold 4:F hold
+// Удерж 2,3; 1 и 4 вверх на цифры
+1:A->Q 2:S hold 3:D hold 4:F->R
+1:Q->1 2:S hold 3:D hold 4:R->4
+1:1->Q 2:S hold 3:D hold 4:4->R
+1:Q->A 2:S hold 3:D hold 4:R->F
+// Удерж 1,4; 2 и 3 вверх на цифры
+1:A hold 2:S->W 3:D->E 4:F hold
+1:A hold 2:W->2 3:E->3 4:F hold
+1:A hold 2:2->W 3:3->E 4:F hold
+1:A hold 2:W->S 3:E->D 4:F hold
+// Удерж 2,3; 1 и 4 вниз
+1:A->Z 2:S hold 3:D hold 4:F->V
+1:Z->A 2:S hold 3:D hold 4:V->F
+// Удерж 1,4; 2 и 3 вниз
+1:A hold 2:S->X 3:D->C 4:F hold
+1:A hold 2:X->S 3:C->D 4:F hold
+// Удерж 3,4; 1 и 2 вверх на цифры
+1:A->Q 2:S->W 3:D hold 4:F hold
+1:Q->1 2:W->2 3:D hold 4:F hold
+1:1->Q 2:2->W 3:D hold 4:F hold
+1:Q->A 2:W->S 3:D hold 4:F hold
+// Удерж 1,2; 3 и 4 вверх на цифры
+1:A hold 2:S hold 3:D->E 4:F->R
+1:A hold 2:S hold 3:E->3 4:R->4
+1:A hold 2:S hold 3:3->E 4:4->R
+1:A hold 2:S hold 3:E->D 4:R->F
+// Удерж 3,4; 1 и 2 вниз
+1:A->Z 2:S->X 3:D hold 4:F hold
+1:Z->A 2:X->S 3:D hold 4:F hold
+// Удерж 1,2; 3 и 4 вниз
+1:A hold 2:S hold 3:D->C 4:F->V
+1:A hold 2:S hold 3:C->D 4:V->F`,
+
+        hard: `// Сложное задание — множественные перемещения
+// Установка
+1:A hold 2:S hold 3:D hold 4:F hold
+// Все вверх на верхний
+1:A->Q 2:S->W 3:D->E 4:F->R
+// Все на цифры
+1:Q->1 2:W->2 3:E->3 4:R->4
+// Все назад на верхний
+1:1->Q 2:2->W 3:3->E 4:4->R
+// Все вниз на домашний
+1:Q->A 2:W->S 3:E->D 4:R->F
+// Все вниз на нижний
+1:A->Z 2:S->X 3:D->C 4:F->V
+// Все назад на домашний
+1:Z->A 2:X->S 3:C->D 4:V->F
+// Волна: 1,3 вверх; 2,4 держат
+1:A->Q 2:S hold 3:D->E 4:F hold
+1:Q->1 2:S hold 3:E->3 4:F hold
+// Волна: 2,4 вверх; 1,3 держат
+1:1 hold 2:S->W 3:3 hold 4:F->R
+1:1 hold 2:W->2 3:3 hold 4:R->4
+// Все назад на домашний
+1:1->Q 2:2->W 3:3->E 4:4->R
+1:Q->A 2:W->S 3:E->D 4:R->F
+// Волна вниз: 1,3 вниз; 2,4 держат
+1:A->Z 2:S hold 3:D->C 4:F hold
+// Волна вниз: 2,4 вниз; 1,3 держат
+1:Z hold 2:S->X 3:C hold 4:F->V
+// Все назад на домашний
+1:Z->A 2:X->S 3:C->D 4:V->F
+// Контрапункт: 1,4 вверх; 2,3 вниз
+1:A->Q 2:S->X 3:D->C 4:F->R
+1:Q->A 2:X->S 3:C->D 4:R->F
+// Контрапункт: 1,4 вниз; 2,3 вверх
+1:A->Z 2:S->W 3:D->E 4:F->V
+1:Z->A 2:W->S 3:E->D 4:V->F
+// Расширение: 1 и 4 на цифры
+1:A->Q 2:S hold 3:D hold 4:F->R
+1:Q->1 2:S hold 3:D hold 4:R->4
+1:1->Q 2:S hold 3:D hold 4:4->R
+1:Q->A 2:S hold 3:D hold 4:R->F
+// Расширение вниз: 1 и 4
+1:A->Z 2:S hold 3:D hold 4:F->V
+1:Z->A 2:S hold 3:D hold 4:V->F`,
+
+        stretch: `// Растяжка — широкие перемещения
+// Установка
+1:A hold 2:S hold 3:D hold 4:F hold
+// Растяжка 1: вся колонка вверх-вниз
+1:A->Q 2:S hold 3:D hold 4:F hold
+1:Q->1 2:S hold 3:D hold 4:F hold
+1:1->Q 2:S hold 3:D hold 4:F hold
+1:Q->A 2:S hold 3:D hold 4:F hold
+1:A->Z 2:S hold 3:D hold 4:F hold
+1:Z->A 2:S hold 3:D hold 4:F hold
+// Растяжка 2
+1:A hold 2:S->W 3:D hold 4:F hold
+1:A hold 2:W->2 3:D hold 4:F hold
+1:A hold 2:2->W 3:D hold 4:F hold
+1:A hold 2:W->S 3:D hold 4:F hold
+1:A hold 2:S->X 3:D hold 4:F hold
+1:A hold 2:X->S 3:D hold 4:F hold
+// Растяжка 3
+1:A hold 2:S hold 3:D->E 4:F hold
+1:A hold 2:S hold 3:E->3 4:F hold
+1:A hold 2:S hold 3:3->E 4:F hold
+1:A hold 2:S hold 3:E->D 4:F hold
+1:A hold 2:S hold 3:D->C 4:F hold
+1:A hold 2:S hold 3:C->D 4:F hold
+// Растяжка 4
+1:A hold 2:S hold 3:D hold 4:F->R
+1:A hold 2:S hold 3:D hold 4:R->4
+1:A hold 2:S hold 3:D hold 4:4->R
+1:A hold 2:S hold 3:D hold 4:R->F
+1:A hold 2:S hold 3:D hold 4:F->V
+1:A hold 2:S hold 3:D hold 4:V->F
+// Широкая: 1 и 4 на цифры одновременно
+1:A->Q 2:S hold 3:D hold 4:F->R
+1:Q->1 2:S hold 3:D hold 4:R->4
+1:1->Q 2:S hold 3:D hold 4:4->R
+1:Q->A 2:S hold 3:D hold 4:R->F
+// Широкая: 1 и 4 вниз одновременно
+1:A->Z 2:S hold 3:D hold 4:F->V
+1:Z->A 2:S hold 3:D hold 4:V->F
+// Большой палец
+1:A hold 2:S hold 3:D hold 4:F hold 5:Space hold
+1:A hold 2:S hold 3:D hold 4:F hold 5:Space hold`
+    };
+
+    function loadPreset(name) {
+        let text = PRESETS[name];
+        if (state.hand === 'right') {
+            text = mirrorTaskText(text);
+        }
+        document.getElementById('taskInput').value = text;
+        showMessage(`📋 Загружен пресет: ${name}`, 'info');
+    }
+
+    function generateRandomTask() {
+        const positions = {1: 'a', 2: 's', 3: 'd', 4: 'f'};
+        const moves = [];
+        
+        // Начальная установка
+        moves.push('1:A hold 2:S hold 3:D hold 4:F hold');
+        
+        const patterns = [
+            // Один палец вверх
+            { fingers: [1], dir: 'up' },
+            { fingers: [2], dir: 'up' },
+            { fingers: [3], dir: 'up' },
+            { fingers: [4], dir: 'up' },
+            // Один палец вниз
+            { fingers: [1], dir: 'down' },
+            { fingers: [2], dir: 'down' },
+            { fingers: [3], dir: 'down' },
+            { fingers: [4], dir: 'down' },
+            // Два пальца вверх (через одного)
+            { fingers: [1, 3], dir: 'up' },
+            { fingers: [2, 4], dir: 'up' },
+            // Два пальца вниз
+            { fingers: [1, 3], dir: 'down' },
+            { fingers: [2, 4], dir: 'down' },
+            // Два пальца вверх (соседи)
+            { fingers: [1, 2], dir: 'up' },
+            { fingers: [3, 4], dir: 'up' },
+            // Два пальца вниз (соседи)
+            { fingers: [1, 2], dir: 'down' },
+            { fingers: [3, 4], dir: 'down' },
+            // Все вверх
+            { fingers: [1, 2, 3, 4], dir: 'up' },
+            // Все вниз
+            { fingers: [1, 2, 3, 4], dir: 'down' },
+            // Контрапункт: 1,4 вверх; 2,3 вниз
+            { fingers: [1, 4], dir: 'up', others: [2, 3], otherDir: 'down' },
+            // Контрапункт: 1,4 вниз; 2,3 вверх
+            { fingers: [1, 4], dir: 'down', others: [2, 3], otherDir: 'up' },
+        ];
+        
+        const upMap = { 'a': 'q', 's': 'w', 'd': 'e', 'f': 'r', 'q': '1', 'w': '2', 'e': '3', 'r': '4', 'z': 'a', 'x': 's', 'c': 'd', 'v': 'f' };
+        const downMap = { 'q': 'a', 'w': 's', 'e': 'd', 'r': 'f', '1': 'q', '2': 'w', '3': 'e', '4': 'r', 'a': 'z', 's': 'x', 'd': 'c', 'f': 'v' };
+        
+        for (let i = 0; i < 20; i++) {
+            const pattern = patterns[Math.floor(Math.random() * patterns.length)];
+            const moveActions = [];
+            const holdActions = [];
+            
+            for (let f = 1; f <= 4; f++) {
+                if (pattern.fingers.includes(f)) {
+                    const current = positions[f];
+                    const target = pattern.dir === 'up' ? upMap[current] : downMap[current];
+                    if (target) {
+                        moveActions.push(`${f}:${current.toUpperCase()}->${target.toUpperCase()}`);
+                        positions[f] = target;
+                    }
+                } else if (pattern.others && pattern.others.includes(f)) {
+                    const current = positions[f];
+                    const target = pattern.otherDir === 'up' ? upMap[current] : downMap[current];
+                    if (target) {
+                        moveActions.push(`${f}:${current.toUpperCase()}->${target.toUpperCase()}`);
+                        positions[f] = target;
+                    }
+                } else {
+                    holdActions.push(`${f}:${positions[f].toUpperCase()} hold`);
+                }
+            }
+            
+            if (moveActions.length > 0) {
+                moves.push([...moveActions, ...holdActions].join(' '));
+            }
+        }
+        
+        // Вернуть всех на домашний ряд
+        const finalMoves = [];
+        const finalHolds = [];
+        for (let f = 1; f <= 4; f++) {
+            if (positions[f] !== 'a' && positions[f] !== 's' && positions[f] !== 'd' && positions[f] !== 'f') {
+                const home = {1: 'a', 2: 's', 3: 'd', 4: 'f'}[f];
+                // Найти путь назад
+                let current = positions[f];
+                const path = [];
+                while (current !== home) {
+                    const next = downMap[current];
+                    if (!next) break;
+                    path.push(next);
+                    current = next;
+                }
+                // Добавить ходы по пути
+                let prev = positions[f];
+                for (const step of path) {
+                    finalMoves.push(`${f}:${prev.toUpperCase()}->${step.toUpperCase()}`);
+                    prev = step;
+                }
+                positions[f] = home;
+            } else {
+                finalHolds.push(`${f}:${positions[f].toUpperCase()} hold`);
+            }
+        }
+        if (finalMoves.length > 0) {
+            moves.push([...finalMoves, ...finalHolds].join(' '));
+        }
+        
+        return moves.join('\n');
+    }
+
+    function startRandom() {
+        const text = generateRandomTask();
+        document.getElementById('taskInput').value = text;
+        parseAndLoad();
+    }
+
+    function startCustom() {
+        const text = document.getElementById('taskInput').value.trim();
+        if (!text) {
+            showMessage('❌ Введите задание или выберите пресет', 'error');
+            return;
+        }
+        parseAndLoad();
+    }
+
+    function clearInput() {
+        document.getElementById('taskInput').value = '';
+    }
+
+    // ==================== УТИЛИТЫ ====================
+
+    function showMessage(text, type) {
+        // Удалить старые сообщения
+        document.querySelectorAll('.message').forEach(m => m.remove());
+
+        const msg = document.createElement('div');
+        msg.className = `message ${type}-msg`;
+        msg.textContent = text;
+        document.body.appendChild(msg);
+
+        setTimeout(() => {
+            msg.style.opacity = '0';
+            msg.style.transition = 'opacity 0.3s';
+            setTimeout(() => msg.remove(), 300);
+        }, 2500);
+    }
+
+    // ==================== ЗАПУСК ====================
+
+    init();
+    </script>
+</body>
+</html>
